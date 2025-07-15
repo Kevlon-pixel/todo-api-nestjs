@@ -41,6 +41,7 @@ export class UsersService {
         select: {
           id: true,
           email: true,
+          password: true,
           role: true,
           name: true,
           createdAt: true,
@@ -65,6 +66,10 @@ export class UsersService {
         'Ошибка при создании пользователя',
       );
     }
+  }
+
+  async getAll() {
+    return this.prismaService.user.findMany({});
   }
 
   async getById(id: number) {
@@ -107,7 +112,39 @@ export class UsersService {
           updatedAt: true,
         },
       });
+
+      if (!users) {
+        throw new NotFoundException('Пользователи не найдены');
+      }
+
       return users;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        'Не удалось получить данные пользователя',
+      );
+    }
+  }
+
+  async getByEmail(email: string) {
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          name: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('Пользователь не найден');
+      }
+
+      return user;
     } catch (err) {
       throw new InternalServerErrorException(
         'Не удалось получить данные пользователя',

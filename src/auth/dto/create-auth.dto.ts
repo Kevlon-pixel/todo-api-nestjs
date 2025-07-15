@@ -1,7 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
 import { UserRole } from 'generated/prisma';
 
-export class CreateUserDto {
+export class CreateAuthDto {
   @IsEmail()
   email: string;
 
