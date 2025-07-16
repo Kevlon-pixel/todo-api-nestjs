@@ -5,8 +5,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from 'src/users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
@@ -14,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { TokenService } from 'src/token/token.service';
-import { LogoutAuthDto } from './dto/logout-auth.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +23,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async register(dto: CreateAuthDto) {
+  async register(dto: CreateUserDto) {
     try {
       const user = await this.userService.create(dto);
 
@@ -61,8 +59,6 @@ export class AuthService {
         },
       };
     } catch (err) {
-      if (err instanceof HttpException) throw err;
-
       throw new InternalServerErrorException(
         'Не удалось получить данные пользователя',
       );

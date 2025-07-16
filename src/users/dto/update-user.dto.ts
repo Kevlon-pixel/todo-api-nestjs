@@ -1,8 +1,8 @@
-import { UserRole } from "generated/prisma";
+import { UserRole } from 'generated/prisma';
 
-export class CreateUserDto {
-    email?: string;
-    password?: string;
-    name?: string;
-    role?: UserRole;
+export class UpdateUserDto {
+  email?: string;
+  password?: string;
+  name?: string;
+  role?: UserRole;
 }

@@ -7,18 +7,18 @@ import {
 import { Prisma } from 'generated/prisma';
 import { todo } from 'node:test';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Injectable()
 export class TodoService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createTodo(userId: number, dto) {
-    console.log("GHbdt")
+    console.log('GHbdt');
     try {
       return await this.prismaService.toDo.create({
         data: {
           data: dto.data,
-          check: dto.check,
           user: { connect: { id: userId } },
         },
         select: {
@@ -35,7 +35,7 @@ export class TodoService {
     }
   }
 
-  async updateTodo(userId: number, todoId: number, dto) {
+  async updateTodo(userId: number, todoId: number, dto: UpdateTodoDto) {
     try {
       const check = await this.prismaService.toDo.findFirst({
         where: { id: todoId, userId },
@@ -59,6 +59,18 @@ export class TodoService {
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new InternalServerErrorException('Не удалось обновить запись');
+    }
+  }
+
+  async deleteTodo(id: number): Promise<void> {
+    try {
+      await this.prismaService.toDo.delete({
+        where: {
+          id: id,
+        },
+      });
+    } catch (err) {
+      throw new InternalServerErrorException('Ошибка сервера');
     }
   }
 }

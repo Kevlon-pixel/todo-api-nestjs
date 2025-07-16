@@ -4,6 +4,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,26 +13,44 @@ import { CreateTodoDto } from './dto/create-todo.dto';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
+@ApiBearerAuth('bearerAuth')
+@ApiTags('Todo')
 @Controller('todo')
 @UseGuards(JwtGuard, RolesGuard)
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
-  
-  @Roles('USER')  
+  @ApiOperation({ summary: 'Создание задачи' })
+  @Roles('USER')
+  @Roles('USER')
   @Post('/create')
   async createTodo(@Req() req, @Body() dto: CreateTodoDto) {
     return this.todoService.createTodo(req.user.sub, dto);
   }
-  
-  @Roles('USER')  
+
+  @ApiOperation({ summary: 'Обновление задачи' })
+  @Roles('USER')
   @Post('/update')
   async updateTodo(
     @Req() req,
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CreateTodoDto,
+    @Query('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTodoDto,
   ) {
-    return (this, this.todoService.updateTodo(req.user.sub, id, dto));
+    return this.todoService.updateTodo(req.user.sub, id, dto);
+  }
+
+  @ApiOperation({ summary: 'Удаление задачи' })
+  @Roles('USER')
+  @Post('/delete')
+  async deleteTodo(@Param('id', ParseIntPipe) id: number) {
+    return this.todoService.deleteTodo(id);
   }
 }
