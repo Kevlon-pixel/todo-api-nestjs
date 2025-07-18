@@ -7,17 +7,26 @@ import {
   Param,
   Delete,
   Req,
+  HttpCode,
+  Query,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-
+import { TokenService } from 'src/token/token.service';
+import { RefreshTokenDto } from 'src/token/dto/refresh-token.dto';
+import { JwtGuard } from './jwt.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   @ApiOperation({ summary: 'Регистрация пользователя' })
   @ApiBody({ type: CreateUserDto })
@@ -33,9 +42,14 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @ApiBearerAuth('bearerAuth')
+  @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Разлогирование пользователя' })
-  @Post('logout')
-  async loguot(@Req() req, @Body('refreshToken') refresh: string) {
-    return this.authService.logout(req.user.sub, refresh);
+  @ApiBody({ type: RefreshTokenDto })
+  @Delete('/logout')
+  async loguot(@Req() req, @Body() dto: RefreshTokenDto) {
+    if (!req.user) throw new UnauthorizedException('Ошибка');
+    await this.tokenService.revokeToken(req.user.sub, dto);
+    return { success: true };
   }
 }

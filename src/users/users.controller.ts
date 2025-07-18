@@ -30,14 +30,14 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Создание пользователя' })
   @Roles('ADMIN')
-  @Post('/create')
+  @Post()
   async create(@Body() dto: CreateUserDto) {
     return this.usersService.create(dto);
   }
 
   @ApiOperation({ summary: 'Получение данных о все пользователях' })
   @Roles('ADMIN')
-  @Get('/getAll')
+  @Get()
   async getAll() {
     return this.usersService.getAll();
   }

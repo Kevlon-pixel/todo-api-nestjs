@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -23,7 +25,7 @@ import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @ApiBearerAuth('bearerAuth')
 @ApiTags('Todo')
-@Controller('todo')
+@Controller('todos')
 @UseGuards(JwtGuard, RolesGuard)
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
@@ -31,17 +33,17 @@ export class TodoController {
   @ApiOperation({ summary: 'Создание задачи' })
   @Roles('USER')
   @Roles('USER')
-  @Post('/create')
+  @Post()
   async createTodo(@Req() req, @Body() dto: CreateTodoDto) {
     return this.todoService.createTodo(req.user.sub, dto);
   }
 
   @ApiOperation({ summary: 'Обновление задачи' })
   @Roles('USER')
-  @Post('/update')
+  @Patch('/:id')
   async updateTodo(
     @Req() req,
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTodoDto,
   ) {
     return this.todoService.updateTodo(req.user.sub, id, dto);
@@ -49,7 +51,7 @@ export class TodoController {
 
   @ApiOperation({ summary: 'Удаление задачи' })
   @Roles('USER')
-  @Post('/delete')
+  @Delete('/:id')
   async deleteTodo(@Param('id', ParseIntPipe) id: number) {
     return this.todoService.deleteTodo(id);
   }

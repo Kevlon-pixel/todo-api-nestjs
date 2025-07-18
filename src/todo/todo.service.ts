@@ -62,11 +62,15 @@ export class TodoService {
     }
   }
 
-  async deleteTodo(id: number): Promise<void> {
+  async deleteTodo(todoId: number): Promise<void> {
+    const check = await this.prismaService.toDo.findFirst({
+      where: { id: todoId },
+    });
+    if (!check) throw new NotFoundException('Задача не найдена');
     try {
       await this.prismaService.toDo.delete({
         where: {
-          id: id,
+          id: todoId,
         },
       });
     } catch (err) {

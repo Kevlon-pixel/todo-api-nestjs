@@ -31,12 +31,18 @@ export class AuthService {
 
       const accessToken = this.jwtService.sign(
         { sub: user.id, role: user.role },
-        { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' },
+        {
+          secret: process.env.JWT_ACCESS_SECRET,
+          expiresIn: process.env.JWT_ACCESS_TTL,
+        },
       );
 
       const refreshToken = this.jwtService.sign(
         { sub: user.id, role: user.role, jti },
-        { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d' },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: process.env.JWT_REFRESH_TTL,
+        },
       );
 
       const salt = Number(process.env.SALT);
@@ -114,38 +120,6 @@ export class AuthService {
       throw new InternalServerErrorException(
         'Не удалось получить данные пользователя',
       );
-    }
-  }
-
-  async logout(userId: number, token: string): Promise<void> {
-    try {
-      const paylaod = (await this.jwtService.verify(token, {
-        secret: process.env.JWT_REFRESH_SECRET,
-        ignoreExpiration: true,
-      })) as { jti: string };
-
-      if (!paylaod) {
-        throw new UnauthorizedException('Некорректный refresh токен');
-      }
-
-      const record = await this.prismaService.refreshToken.findUnique({
-        where: {
-          id: paylaod.jti,
-        },
-      });
-      if (!record || record.userId !== userId) {
-        throw new NotFoundException('Токен не найден');
-      }
-
-      const same = await bcrypt.compare(token, record.hash);
-      if (!same) {
-        throw new UnauthorizedException('Некорректный refresh токен');
-      }
-
-      await this.tokenService.revokeRefreshToken(paylaod.jti);
-    } catch (err) {
-      if (err instanceof HttpException) throw err;
-      throw new UnauthorizedException('Не удалось разлогиниться');
     }
   }
 }
